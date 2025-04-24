@@ -16,4 +16,6 @@ public interface CommentRepository extends CrudRepository<CommentModel, UUID> {
     Optional<CommentModel> findByIdAndUserIdAndIsDeletedFalse(UUID id, UUID userId);
 
     List<CommentModel> findAllByBlogIdAndUserIdAndIsDeletedFalse(UUID blogId, UUID userId);
+
+    List<CommentModel> findAllByBlogIdAndIsDeletedFalse(UUID blogId);
 }

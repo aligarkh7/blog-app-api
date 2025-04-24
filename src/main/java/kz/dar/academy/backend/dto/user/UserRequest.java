@@ -12,8 +12,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public class UserRequest {
-    @NotNull
-    @Size(min = 1, max = 64)
+//    @NotNull
+//    @Size(min = 1, max = 64)
     private String firstName;
     private String lastName;
     private LocalDate birthday;

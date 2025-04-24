@@ -3,6 +3,7 @@ package kz.dar.academy.backend.controller.comment;
 import jakarta.validation.Valid;
 import kz.dar.academy.backend.dto.comment.CommentRequest;
 import kz.dar.academy.backend.dto.comment.CommentResponse;
+import kz.dar.academy.backend.dto.comment.CommentsByBlogIdAndUserIdResponse;
 import kz.dar.academy.backend.model.comment.CommentModel;
 import kz.dar.academy.backend.service.comment.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class CommentController {
     }
 
     @GetMapping("/{blogId}")
-    public List<CommentModel> getAllByBlogId(@PathVariable UUID blogId) {
+    public List<CommentsByBlogIdAndUserIdResponse> getAllByBlogId(@PathVariable UUID blogId) {
         return commentService.getAllByBlogId(blogId);
     }
 

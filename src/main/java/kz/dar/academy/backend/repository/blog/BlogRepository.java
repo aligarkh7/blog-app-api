@@ -19,4 +19,6 @@ public interface BlogRepository extends CrudRepository<BlogModel, UUID> {
 
     List<BlogModel> findAllByUserIdAndIsDeletedFalse(UUID id);
 
+    Optional<BlogModel> findByIdAndIsDeletedFalse(UUID id);
+
 }

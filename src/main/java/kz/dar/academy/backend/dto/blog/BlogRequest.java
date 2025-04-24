@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class BlogRequest {
-    @NotNull
-    @Size(min = 1, max = 255)
+//    @NotNull
+//    @Size(min = 1, max = 255)
     private String title;
     private String content;
 }

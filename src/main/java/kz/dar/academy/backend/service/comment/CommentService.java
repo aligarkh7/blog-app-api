@@ -2,6 +2,7 @@ package kz.dar.academy.backend.service.comment;
 
 import kz.dar.academy.backend.dto.comment.CommentRequest;
 import kz.dar.academy.backend.dto.comment.CommentResponse;
+import kz.dar.academy.backend.dto.comment.CommentsByBlogIdAndUserIdResponse;
 import kz.dar.academy.backend.model.comment.CommentModel;
 import org.springframework.http.ResponseEntity;
 
@@ -14,7 +15,7 @@ public interface CommentService {
 
     CommentResponse update(UUID id, CommentRequest commentRequest);
 
-    List<CommentModel> getAllByBlogId(UUID blogId);
+    List<CommentsByBlogIdAndUserIdResponse> getAllByBlogId(UUID blogId);
 
     ResponseEntity<String> deleteById(UUID id);
 

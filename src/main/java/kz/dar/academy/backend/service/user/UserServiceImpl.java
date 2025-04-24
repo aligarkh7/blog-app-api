@@ -41,22 +41,6 @@ public class UserServiceImpl implements UserService {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    private String getEmailName() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getName();
-    }
-
-    private UserModel getCurrentUserIsDeletedFalse() {
-        return getCurrentUser(userRepository.findByEmailAndIsDeletedFalse(getEmailName()));
-    }
-
-    private UserModel getCurrentUser(Optional<UserModel> userModelOptional) {
-
-        if (!userModelOptional.isPresent()) {
-            throw new UserNotFoundException("User not found");
-        }
-        return userModelOptional.get();
-    }
 
     @Transactional
     @Override
@@ -93,9 +77,27 @@ public class UserServiceImpl implements UserService {
 
         UserModel userModel = getCurrentUserIsDeletedFalse();
 
-        userModel.setFirstName(userRequest.getFirstName());
-        userModel.setLastName(userRequest.getLastName());
-        userModel.setBirthday(userRequest.getBirthday());
+        boolean isNotBlank = false;
+
+        if (userRequest.getFirstName() != null && !userRequest.getFirstName().isBlank()){
+            isNotBlank = true;
+            userModel.setFirstName(userRequest.getFirstName());
+        }
+
+        if (userRequest.getLastName() != null && !userRequest.getLastName().isBlank()){
+            isNotBlank = true;
+            userModel.setLastName(userRequest.getLastName());
+        }
+
+        if (userRequest.getBirthday() != null && !userRequest.getBirthday().toString().isBlank()){
+            isNotBlank = true;
+            userModel.setBirthday(userRequest.getBirthday());
+        }
+
+        if (!isNotBlank){
+            throw new UserNotFoundException("UserRequest is empty");
+        }
+
         userModel.setUpdatedAt(LocalDateTime.now());
 
         userRepository.save(userModel);
@@ -117,7 +119,7 @@ public class UserServiceImpl implements UserService {
         UserModel userModel = getCurrentUser(userRepository.findByEmail(getEmailName()));
 
         if (userModel.isDeleted()) {
-            throw new UserAlreadyDeletedException("User already deleted");
+            throw new UserNotFoundException("User not found");
         }
 
         for (BlogModel blogModel : blogRepository.findAllByUserIdAndIsDeletedFalse(userModel.getId())) {
@@ -130,5 +132,22 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userModel);
 
         return ResponseEntity.ok().body("User deleted successfully");
+    }
+
+    private String getEmailName() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getName();
+    }
+
+    private UserModel getCurrentUserIsDeletedFalse() {
+        return getCurrentUser(userRepository.findByEmailAndIsDeletedFalse(getEmailName()));
+    }
+
+    private UserModel getCurrentUser(Optional<UserModel> userModelOptional) {
+
+        if (!userModelOptional.isPresent()) {
+            throw new UserNotFoundException("User not found");
+        }
+        return userModelOptional.get();
     }
 }

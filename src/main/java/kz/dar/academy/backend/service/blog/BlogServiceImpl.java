@@ -41,28 +41,6 @@ public class BlogServiceImpl implements BlogService {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    private UserModel getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-
-        Optional<UserModel> userModelOptional = userRepository.findByEmailAndIsDeletedFalse(email);
-
-        if (!userModelOptional.isPresent()) {
-            throw new UserNotFoundException("User not found with email: " + email);
-        }
-
-        return userModelOptional.get();
-    }
-
-    private BlogModel getCurrentBlog(Optional<BlogModel> blogModelOptional) {
-
-        if (!blogModelOptional.isPresent()) {
-            throw new BlogNotFoundException("Blog not found");
-        }
-
-        return blogModelOptional.get();
-    }
-
     @Transactional
     @Override
     public BlogWithUserInfoResponse create(BlogRequest blogRequest) {
@@ -70,6 +48,10 @@ public class BlogServiceImpl implements BlogService {
         UserModel userModel = getCurrentUser();
 
         BlogModel blogModel = modelMapper.map(blogRequest, BlogModel.class);
+
+        if (blogModel.getTitle() == null || blogModel.getTitle().isBlank()) {
+            blogModel.setTitle("Untitled");
+        }
 
         blogModel.setCreatedAt(LocalDateTime.now());
         blogModel.setUpdatedAt(LocalDateTime.now());
@@ -79,7 +61,7 @@ public class BlogServiceImpl implements BlogService {
 
         BlogWithUserInfoResponse blogWithUserInfoResponse = modelMapper.map(blogModel, BlogWithUserInfoResponse.class);
 
-        blogWithUserInfoResponse.setUserInfo(modelMapper.map(userModel, UserInfo.class));
+        blogWithUserInfoResponse.setUser(modelMapper.map(userModel, UserInfo.class));
 
         return blogWithUserInfoResponse;
     }
@@ -91,8 +73,22 @@ public class BlogServiceImpl implements BlogService {
 
         BlogModel blogModel = getCurrentBlog(blogRepository.findByIdAndUserIdAndIsDeletedFalse(id, userModel.getId()));
 
-        blogModel.setTitle(blogRequest.getTitle());
-        blogModel.setContent(blogRequest.getContent());
+        boolean isNotBlank = false;
+
+        if (blogRequest.getTitle() != null && !blogRequest.getTitle().isBlank()) {
+            isNotBlank = true;
+            blogModel.setTitle(blogRequest.getTitle());
+        }
+
+        if (blogRequest.getContent() != null && !blogRequest.getContent().isBlank()) {
+            isNotBlank = true;
+            blogModel.setContent(blogRequest.getContent());
+        }
+
+        if (!isNotBlank){
+            throw new BlogNotFoundException("BlogRequest is empty");
+        }
+
         blogModel.setUpdatedAt(LocalDateTime.now());
 
         blogRepository.save(blogModel);
@@ -109,7 +105,7 @@ public class BlogServiceImpl implements BlogService {
 
         BlogWithUserInfoResponse blogWithUserInfoResponse = modelMapper.map(blogModel, BlogWithUserInfoResponse.class);
 
-        blogWithUserInfoResponse.setUserInfo(modelMapper.map(userModel, UserInfo.class));
+        blogWithUserInfoResponse.setUser(modelMapper.map(userModel, UserInfo.class));
 
         return blogWithUserInfoResponse;
     }
@@ -144,6 +140,28 @@ public class BlogServiceImpl implements BlogService {
         blogRepository.save(blogModel);
 
         return ResponseEntity.ok().body("Blog deleted successfully");
+    }
+
+    private UserModel getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        Optional<UserModel> userModelOptional = userRepository.findByEmailAndIsDeletedFalse(email);
+
+        if (!userModelOptional.isPresent()) {
+            throw new UserNotFoundException("User not found with email: " + email);
+        }
+
+        return userModelOptional.get();
+    }
+
+    private BlogModel getCurrentBlog(Optional<BlogModel> blogModelOptional) {
+
+        if (!blogModelOptional.isPresent()) {
+            throw new BlogNotFoundException("Blog not found");
+        }
+
+        return blogModelOptional.get();
     }
 
 }
